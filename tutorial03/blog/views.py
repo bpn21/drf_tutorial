@@ -30,7 +30,7 @@ def post_detail(request, pk):
     try:
         post = Post.objects.get(pk=pk)
     except post.DoesNotExist:
-        return HttpResponse(status=404)
+        return JsonResponse(status=404)
 
     if request.method == 'GET':
         serializer = PostSerializer(post)
@@ -45,6 +45,8 @@ def post_detail(request, pk):
         return JsonResponse(serializer.errors, status=400)
 
     elif request.method == 'DELETE':
+        serializer = PostSerializer(post)
         post.delete()
+        return JsonResponse(serializer.data)
         return HttpResponse(status=204)
 
