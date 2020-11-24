@@ -1,52 +1,59 @@
-from django.http import HttpResponse, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework.parsers import JSONParser
 from .models import Post,Category
 from .serializers import PostSerializer,CategorySerializer
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
-@csrf_exempt  # post garna parcha so.. kai data post garda csrf of error naos bhaneyra rakheko
-def post_list(request):
+@api_view(['GET','POST'])
+def post_list(request,format = None):
     """
     List all code post, or create a new post.
     """
+    print('request is : ',request)
+    print('request.method is : ',request.method)
+    print('request.method is : ',request.data)
+
+
+
     if request.method == 'GET':
         post = Post.objects.all()
         serializer = PostSerializer(post, many=True)
-        return JsonResponse(serializer.data, safe=False)
+        return Response(serializer.data)    
 
     elif request.method == 'POST':
-        data = JSONParser().parse(request)
-        serializer = PostSerializer(data=data)
+        # data = JSONParser().parse(request)
+        # serializer = PostSerializer(data=data)
+        serializer = PostSerializer(data=request)
         if serializer.is_valid():
             serializer.save()
-            return JsonResponse(serializer.data, status=201)
-        return JsonResponse(serializer.errors, status=400)
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
 
-@csrf_exempt
-def post_detail(request, pk):
+@api_view(['GET','PUT','DELETE'])
+def post_detail(request, pk,format = None):
     """
     Retrieve, update or delete a code post.
     """
     try:
         post = Post.objects.get(pk=pk)
     except post.DoesNotExist:
-        return JsonResponse(status=404)
+        return Response(status=404)
 
     if request.method == 'GET':
         serializer = PostSerializer(post)
-        return JsonResponse(serializer.data)
+        return Response(serializer.data)
 
     elif request.method == 'PUT':
-        data = JSONParser().parse(request)
-        serializer = PostSerializer(post, data=data)
+        # data = JSONParser().parse(request)
+        serializer = PostSerializer(post, data=request)
         if serializer.is_valid():
             serializer.save()
-            return JsonResponse(serializer.data)
-        return JsonResponse(serializer.errors, status=400)
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
 
     elif request.method == 'DELETE':
         serializer = PostSerializer(post)
         post.delete()
-        return JsonResponse(serializer.data)
+        return Response(serializer.data)
         return HttpResponse(status=204)
 
