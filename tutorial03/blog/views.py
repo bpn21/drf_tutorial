@@ -14,7 +14,6 @@ def post_list(request,format = None):
     print('request.method is : ',request.data)
 
 
-
     if request.method == 'GET':
         post = Post.objects.all()
         serializer = PostSerializer(post, many=True)
